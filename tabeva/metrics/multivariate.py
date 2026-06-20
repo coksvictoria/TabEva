@@ -34,6 +34,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.impute import SimpleImputer
+import warnings
+warnings.filterwarnings("ignore", message="X does not have valid feature names", category=UserWarning)
+
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +142,7 @@ def ml_evaluation(
     real, fake, df_test = real.copy(), fake.copy(), df_test.copy()
     fake_x = fake.drop([target_col], axis=1)
     X_test = df_test.drop([target_col], axis=1)
+    
 
     if target_type == "class":
         c_col = [i for i in c_col if i != target_col]
@@ -168,14 +172,13 @@ def ml_evaluation(
     R: List = []
 
     if target_type == "regr":
+        # Keep three fast regressors
         estimators = [
             lgb.LGBMRegressor(n_estimators=100, random_state=1),
             RandomForestRegressor(n_estimators=100, random_state=1),
-            Lasso(random_state=1),
             Ridge(alpha=1.0, random_state=1),
-            ElasticNet(random_state=1),
         ]
-        estimator_names = ["LGBM", "RF", "LS", "RD", "EN"]
+        estimator_names = ["LGBM", "RF", "RD"]
 
         for est_name, est in zip(estimator_names, estimators):
             start = time.time()
@@ -191,17 +194,19 @@ def ml_evaluation(
                           mean_squared_error(y_test, y_pred, squared=False)])
             print(f"{est_name} took {round(time.time() - start, 2)}s")
 
-        return pd.DataFrame(R, columns=["data_strategy", "reg_name", "r2", "mae", "rmse"]).sort_values("data_strategy")
+        # Compute average RMSE across estimators
+        rmses = [row[4] for row in R if len(row) >= 5]
+        avg_rmse = float(np.mean(rmses)) if len(rmses) > 0 else float("nan")
+        return avg_rmse
 
     # Classification
+    # Keep three fast classifiers
     estimators = [
-        lgb.LGBMClassifier(n_estimators=100, random_state=1),
+        lgb.LGBMClassifier(n_estimators=100, verbose=-1, force_row_wise=True),
         RandomForestClassifier(n_estimators=100, random_state=1),
-        LogisticRegression(multi_class="auto", solver="lbfgs", max_iter=500, random_state=1),
-        DecisionTreeClassifier(random_state=1),
-        MLPClassifier([50, 50], solver="adam", activation="relu", learning_rate="adaptive", random_state=1),
+        LogisticRegression(solver="lbfgs", max_iter=500, random_state=1),
     ]
-    estimator_names = ["LGBM", "RF", "LR", "DT", "MLP"]
+    estimator_names = ["LGBM", "RF", "LR"]
 
     for est_name, est in zip(estimator_names, estimators):
         start = time.time()
@@ -217,8 +222,6 @@ def ml_evaluation(
                 R.append([
                     model_name, est_name,
                     accuracy_score(y_test, y_pred),
-                    precision_score(y_test, y_pred),
-                    recall_score(y_test, y_pred),
                     f1_score(y_test, y_pred),
                     average_precision_score(y_test, y_proba),
                     roc_auc_score(y_test, y_proba),
@@ -227,7 +230,10 @@ def ml_evaluation(
                 pass
         print(f"{est_name} took {round(time.time() - start, 2)}s")
 
-    return pd.DataFrame(R, columns=["data_strategy", "clf_name", "acc", "pre", "rec", "f1", "aucpr", "aucroc"]).sort_values("data_strategy")
+    # Compute average F1 across classifiers
+    f1s = [row[3] for row in R if len(row) >= 4]
+    avg_f1 = float(np.mean(f1s)) if len(f1s) > 0 else float("nan")
+    return avg_f1
 
 
 def bar_comparison(

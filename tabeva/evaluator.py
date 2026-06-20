@@ -217,22 +217,21 @@ class TabEva:
             output["density"] = float("nan")
             output["coverage"] = float("nan")
 
+
         # ML utility: train on synthetic, evaluate on real test set
-        
-            ml_df = ml_evaluation(
-                self.real,
-                self.fake,
-                self.df_test,
-                self.categorical_columns,
-                self.numerical_columns,
-                self.target_col,
-                self.target_type,
-                model_name=self.synthesizer_name,
-                filename=self._output_path(self.synthesizer_name + "_ml", "multivariate"),
-            )
-            # return ML table as list-oriented dict for serialization
-            output["ml"] = ml_df.to_dict(orient="list") if ml_df is not None else {}
-       
+        ml_metric = ml_evaluation(
+            self.real,
+            self.fake,
+            self.df_test,
+            self.categorical_columns,
+            self.numerical_columns,
+            self.target_col,
+            self.target_type,
+            model_name=self.synthesizer_name,
+            filename=self._output_path(self.synthesizer_name + "_ml", "multivariate"),
+        )
+        # ml_evaluation returns a single aggregated float (avg F1 or avg RMSE)
+        output["ml"] = float(ml_metric) if ml_metric is not None else float("nan")
 
         return output
 

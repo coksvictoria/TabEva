@@ -39,20 +39,20 @@ CAT_COLS = [
 GMs = [
     "real.csv",
     "simulation.csv",
-    # "ADASYN.csv",
+    "ADASYN.csv",
     "copula.csv",
-    # "copulagan.csv",
-    # "ctabgan.csv",
-    # "ctgan.csv",
-    # "SMOTE.csv",
-    # "SMOTENC.csv",
-    # "SMOTETomek.csv",
-    # "stasy.csv",
-    # "synthpop.csv",
-    # "tabddpm.csv",
-    # "tabsyn.csv",
-    # "ttvae.csv",
-    # "tvae.csv",
+    "copulagan.csv",
+    "ctabgan.csv",
+    "ctgan.csv",
+    "SMOTE.csv",
+    "SMOTENC.csv",
+    "SMOTETomek.csv",
+    "stasy.csv",
+    "synthpop.csv",
+    "tabddpm.csv",
+    "tabsyn.csv",
+    "ttvae.csv",
+    "tvae.csv",
     "twae.csv",
 ]
 
@@ -62,20 +62,20 @@ os.makedirs(OUTPUT, exist_ok=True)
 SYN_NAME_MAP = {
     "real.csv": "Real",
     "simulation.csv": "Simulation",
-    # "ADASYN.csv": "ADASYN",
+    "ADASYN.csv": "ADASYN",
     "copula.csv": "Copula",
-    # "copulagan.csv": "CopulaGAN",
-    # "ctabgan.csv": "CTABGAN",
-    # "ctgan.csv": "CTGAN",
-    # "SMOTE.csv": "SMOTE",
-    # "SMOTENC.csv": "SMOTENC",
-    # "SMOTETomek.csv": "SMOTE-Tomek",
-    # "stasy.csv": "STasy",
-    # "synthpop.csv": "synthpop",
-    # "tabddpm.csv": "TabDDPM",
-    # "tabsyn.csv": "TabSyn",
-    # "ttvae.csv": "TTVAE",
-    # "tvae.csv": "TVAE",
+    "copulagan.csv": "CopulaGAN",
+    "ctabgan.csv": "CTABGAN",
+    "ctgan.csv": "CTGAN",
+    "SMOTE.csv": "SMOTE",
+    "SMOTENC.csv": "SMOTENC",
+    "SMOTETomek.csv": "SMOTE-Tomek",
+    "stasy.csv": "STasy",
+    "synthpop.csv": "synthpop",
+    "tabddpm.csv": "TabDDPM",
+    "tabsyn.csv": "TabSyn",
+    "ttvae.csv": "TTVAE",
+    "tvae.csv": "TVAE",
     "twae.csv": "TWAE",
 }
 
@@ -147,8 +147,15 @@ summary = {}
 for name, v in results.items():
     summary[name] = pd.DataFrame.from_dict(v, orient="index").ffill().iloc[-1]
 
+summary_df = pd.DataFrame(summary).T.round(4)
 
-summary_df = pd.DataFrame(summary).T.round(2)
+out_path = os.path.join(OUTPUT, "summary.csv")
+summary_df.to_csv(out_path, float_format="%.4f")  # saves with 4 decimal places
+print("Saved summary to", out_path)
+
+
+
+
 
 print("\n=== Summary ===")
 print(summary_df.to_string())
