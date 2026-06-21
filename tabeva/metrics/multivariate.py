@@ -210,9 +210,15 @@ def ml_evaluation(
                 model = Pipeline([("preprocess", col_transformer), ("regressor", est)])
                 model.fit(fake_x, fake_y)
                 y_pred = model.predict(X_test)
+                # Compute RMSE in a way that's compatible with multiple scikit-learn versions.
+                try:
+                    rmse = mean_squared_error(y_test, y_pred, squared=False)
+                except TypeError:
+                    # Older sklearn versions don't accept `squared`; compute sqrt of MSE.
+                    rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
                 R.append([model_name, est_name, r2_score(y_test, y_pred),
                           mean_absolute_error(y_test, y_pred),
-                          mean_squared_error(y_test, y_pred, squared=False)])
+                          rmse])
             print(f"{est_name} took {round(time.time() - start, 2)}s")
 
         # Compute average RMSE across estimators
