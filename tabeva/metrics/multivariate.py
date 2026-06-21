@@ -43,7 +43,15 @@ warnings.filterwarnings("ignore", message="X does not have valid feature names",
 # Maximum Mean Discrepancy (MMD)
 # ---------------------------------------------------------------------------
 
-def mmd_kernel(X: np.ndarray, Y: np.ndarray, kernel: str = "rbf", gamma: float = 1.0, degree: int = 2, coef0: float = 0.0) -> float:
+def mmd_kernel(
+    X: np.ndarray,
+    Y: np.ndarray,
+    kernel: str = "rbf",
+    gamma: float = 1.0,
+    sigmas: Optional[List[float]] = [0.1, 1.0, 10.0],
+    degree: int = 2,
+    coef0: float = 0.0,
+) -> float:
     """
     Compute MMD between two feature matrices using linear, RBF, or polynomial kernel.
 
@@ -58,9 +66,23 @@ def mmd_kernel(X: np.ndarray, Y: np.ndarray, kernel: str = "rbf", gamma: float =
         return float(delta.dot(delta.T))
 
     if kernel == "rbf":
-        XX = rbf_kernel(X, X, gamma)
-        YY = rbf_kernel(Y, Y, gamma)
-        XY = rbf_kernel(X, Y, gamma)
+        # Support multi-scale RBF: if `sigmas` is provided, compute
+        # k(x,y)=sum_i exp(-||x-y||^2 / (2*sigma_i^2))
+        if sigmas is not None:
+            XX = np.zeros((X.shape[0], X.shape[0]), dtype=float)
+            YY = np.zeros((Y.shape[0], Y.shape[0]), dtype=float)
+            XY = np.zeros((X.shape[0], Y.shape[0]), dtype=float)
+            for s in sigmas:
+                if s <= 0:
+                    raise ValueError("All sigmas must be positive.")
+                g = 1.0 / (2.0 * (s ** 2))
+                XX += rbf_kernel(X, X, g)
+                YY += rbf_kernel(Y, Y, g)
+                XY += rbf_kernel(X, Y, g)
+        else:
+            XX = rbf_kernel(X, X, gamma)
+            YY = rbf_kernel(Y, Y, gamma)
+            XY = rbf_kernel(X, Y, gamma)
 
     elif kernel == "polynomial":
         XX = polynomial_kernel(X, X, degree, gamma, coef0)
@@ -175,14 +197,13 @@ def ml_evaluation(
         # Keep three fast regressors
         estimators = [
             lgb.LGBMRegressor(n_estimators=100, random_state=1),
-            RandomForestRegressor(n_estimators=100, random_state=1),
+            RandomForestRegressor(n_estimators=100, random_state=1,n_jobs=-1),
             Ridge(alpha=1.0, random_state=1),
         ]
         estimator_names = ["LGBM", "RF", "RD"]
 
         for est_name, est in zip(estimator_names, estimators):
             start = time.time()
-            print(est_name)
             if len(np.unique(fake_y)) == 1:
                 R.append([model_name, est_name, 0, 0, 0])
             else:
@@ -203,14 +224,13 @@ def ml_evaluation(
     # Keep three fast classifiers
     estimators = [
         lgb.LGBMClassifier(n_estimators=100, verbose=-1, force_row_wise=True),
-        RandomForestClassifier(n_estimators=100, random_state=1),
+        RandomForestClassifier(n_estimators=100, random_state=1,n_jobs=-1),
         LogisticRegression(solver="lbfgs", max_iter=500, random_state=1),
     ]
     estimator_names = ["LGBM", "RF", "LR"]
 
     for est_name, est in zip(estimator_names, estimators):
         start = time.time()
-        print(est_name)
         if len(np.unique(fake_y)) == 1:
             R.append([model_name, est_name, 0, 0, 0, 0, 0, 0])
         else:
@@ -357,9 +377,9 @@ def table_plot(reals: pd.DataFrame, fakes: pd.DataFrame, dimensionality_reductio
     else:
         raise ValueError(f"Unsupported reduction method: {dimensionality_reduction}")
 
-    if reals.shape[0] > 10000:
-        reals = reals.sample(10000)
-        fakes = fakes.sample(10000)
+    # if reals.shape[0] > 10000:
+    #     reals = reals.sample(10000)
+    #     fakes = fakes.sample(10000)
 
     real_t = model.fit_transform(reals)
     fake_t = model.fit_transform(fakes)

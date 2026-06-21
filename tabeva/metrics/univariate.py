@@ -175,6 +175,12 @@ def univariate_num_plot(real: pd.DataFrame, fake: pd.DataFrame, n_col: List[str]
     real, fake = real.copy(), fake.copy()
     num_row = math.ceil(len(n_col) / num_col)
     fig, ax = plt.subplots(num_row, num_col, figsize=(4.5 * num_col, 3.5 * num_row))
+    # Normalize `ax` to a 2-D ndarray of shape (num_row, num_col).
+    ax = np.array(ax, dtype=object)
+    if ax.ndim == 0:
+        ax = ax.reshape(1, 1)
+    elif ax.ndim == 1:
+        ax = ax.reshape(num_row, num_col)
 
     for i in range(len(n_col)):
         ridx, cidx = i // num_col, i % num_col
@@ -199,6 +205,12 @@ def univariate_cat_plot(real: pd.DataFrame, fake: pd.DataFrame, c_col: List[str]
     real, fake = real.copy(), fake.copy()
     num_row = math.ceil(len(c_col) / num_col)
     fig, ax = plt.subplots(num_row, num_col, figsize=(4.5 * num_col, 3.5 * num_row))
+    # Normalize `ax` to a 2-D ndarray of shape (num_row, num_col).
+    ax = np.array(ax, dtype=object)
+    if ax.ndim == 0:
+        ax = ax.reshape(1, 1)
+    elif ax.ndim == 1:
+        ax = ax.reshape(num_row, num_col)
 
     for i in range(len(c_col)):
         ridx, cidx = i // num_col, i % num_col

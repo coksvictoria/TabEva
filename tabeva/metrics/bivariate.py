@@ -134,18 +134,25 @@ def column_associations(real: pd.DataFrame, c_col: List[str], theil_u: bool = Fa
 def bivariate_test(real: pd.DataFrame, fake: pd.DataFrame, c_col: List[str]) -> Tuple[float, pd.DataFrame]:
     """
     Compare pairwise association matrices of real and fake.
-    Returns KS p-value and absolute difference matrix.
+
+    Computes the average absolute discrepancy between the association
+    matrices (mean absolute difference over unique column pairs) and
+    returns the discrepancy and the full absolute-difference matrix.
     """
-    real_corr, r_ce = column_associations(real, c_col, theil_u=False)
-    fake_corr, f_ce = column_associations(fake, c_col, theil_u=False)
-    _, p = stats.ks_2samp(r_ce, f_ce)
+    real_corr, _ = column_associations(real, c_col, theil_u=False)
+    fake_corr, _ = column_associations(fake, c_col, theil_u=False)
 
     abs_diff = (real_corr.astype(float) - fake_corr.astype(float)).abs()
-    # Mark sign-flipped correlations as maximally different
-    sign_flip = (real_corr.astype(float) * fake_corr.astype(float)) < 0
-    abs_diff[sign_flip] = 1.0
 
-    return round(p, 4), abs_diff
+    # Compute mean absolute discrepancy over upper-triangle (i<j), ignoring NaNs
+    mat = abs_diff.values
+    n = mat.shape[0]
+    mask = np.triu(np.ones((n, n), dtype=bool), k=1)
+    vals = mat[mask]
+    vals = vals[~np.isnan(vals)]
+    delta_bi = float(np.mean(vals)) if vals.size > 0 else 0.0
+
+    return delta_bi, abs_diff
 
 
 # ---------------------------------------------------------------------------

@@ -4,7 +4,9 @@ TabEva: Main evaluator class for synthetic tabular data.
 
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
+from sklearn.metrics import pairwise_distances
 
 from tabeva.preprocessing import data_preprocess
 from tabeva.metrics.univariate import (
@@ -202,21 +204,14 @@ class TabEva:
         output: Dict = {}
 
         # Maximum Mean Discrepancy (MMD) on the preprocessed (numeric) features
-        try:
-            mmd_value = mmd_kernel(self.realb.values, self.fakeb.values, kernel="rbf")
-            output["mmd"] = float(mmd_value)
-        except Exception:
-            output["mmd"] = float("nan")
+        mmd_value = mmd_kernel(self.realb.values, self.fakeb.values)
+        output["mmd"] = mmd_value
 
         # Precision / Recall / Density / Coverage (use nearest_k=5)
-        try:
-            density, coverage = compute_prdc(self.realb.values, self.fakeb.values, nearest_k=5)
-            output["density"] = float(density)
-            output["coverage"] = float(coverage)
-        except Exception:
-            output["density"] = float("nan")
-            output["coverage"] = float("nan")
-
+        
+        density, coverage = compute_prdc(self.realb.values, self.fakeb.values, nearest_k=5)
+        output["density"] = float(density)
+        output["coverage"] = float(coverage)
 
         # ML utility: train on synthetic, evaluate on real test set
         ml_metric = ml_evaluation(
