@@ -21,7 +21,6 @@ from tabeva import TabEva
 from tabeva.utils import load_data
 from tabeva.metrics.bivariate import bivariate_plots
 
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 REAL_PATH = os.path.join(ROOT, 'synthetic/adult', 'real.csv')
 TEST_PATH = os.path.join(ROOT, 'synthetic/adult', 'test.csv')
@@ -135,18 +134,6 @@ def outlier_inflation(real: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# def category_corruption(real: pd.DataFrame) -> pd.DataFrame:
-#     df = real.copy().reset_index(drop=True)
-#     cat_cols = CAT_COLS
-#     if not cat_cols:
-#         return df
-#     col = random.choice(cat_cols)
-#     # replace 10% of entries with an unseen rare token
-#     n = len(df)
-#     idx = np.random.choice(n, size=max(1, n // 10), replace=False)
-#     df.loc[idx, col] = '__RARE__'
-#     return df
-
 
 def run_experiments(real_path: str = REAL_PATH, test_path: str = TEST_PATH):
     ensure_out()
@@ -156,14 +143,14 @@ def run_experiments(real_path: str = REAL_PATH, test_path: str = TEST_PATH):
 
 
     cases = {
-        # 'identical': identical,
-        # 'destroyed_correlations': destroy_correlations,
-        # 'shuffled_columns': make_shuffled_columns,
-        # 'missing_minority_class': missing_minority_class,
-        # 'memorisation': memorised_records,
-        # 'mode_collapse': mode_collapse,
-        'outlier_inflation': outlier_inflation
-        # 'random_rows': make_random_data,
+        'identical': identical,
+        'destroyed_correlations': destroy_correlations,
+        'shuffled_columns': make_shuffled_columns,
+        'missing_minority_class': missing_minority_class,
+        'memorisation': memorised_records,
+        'mode_collapse': mode_collapse,
+        'outlier_inflation': outlier_inflation,
+        'random_rows': make_random_data
     }
 
     results: dict = {}

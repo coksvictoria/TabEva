@@ -22,7 +22,7 @@ from tabeva.metrics.univariate import (
 from tabeva.metrics.bivariate import bivariate_test as _bivariate_test, bivariate_plot
 from tabeva.metrics.multivariate import table_plot, mmd_kernel, compute_prdc, ml_evaluation
 from tabeva.metrics.cluster import cluster_df
-from tabeva.metrics.sample import ml_detection, record_df
+from tabeva.metrics.sample import ml_detection, record_df, plot_nnd
 
 
 class TabEva:
@@ -234,7 +234,7 @@ class TabEva:
         self,
         n_cluster: int = 20,
         num_col: Optional[int] = 4,
-        figsize: Tuple = (15, 15),
+        figsize: Tuple = (10, 12.5),
         filename: str = "",
     ) -> Dict:
         """
@@ -267,6 +267,16 @@ class TabEva:
 
         shap_path = self._output_path(f"{self.synthesizer_name}_shap.pdf", "sample")
         distances = record_df(self.realo, self.fakeo, self.fakeb, filename=shap_path)
+
+        # Plot nearest-neighbour (d1nn) and centroid distances (cdis)
+        try:
+            plot_nnd(distances[["distance_1nn"]], filename=self._output_path(f"{self.synthesizer_name}_d1nn_hist.pdf", "sample"))
+        except Exception:
+            pass
+        try:
+            plot_nnd(distances[["distance_to_centroid"]], filename=self._output_path(f"{self.synthesizer_name}_cdis_hist.pdf", "sample"))
+        except Exception:
+            pass
         output["mdis"] = distances["distance_mean"].mean()
         output["d1nn"] = distances["distance_1nn"].mean()
         output["cdis"] = distances["distance_to_centroid"].mean()

@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from tabeva.metrics.colors import REAL_COLOR, FAKE_COLOR
 from joblib import Parallel, delayed
 from scipy import spatial, stats
 from scipy.special import kl_div
@@ -187,8 +188,8 @@ def univariate_num_plot(real: pd.DataFrame, fake: pd.DataFrame, n_col: List[str]
         col_name = n_col[i]
         frq, edges = np.histogram(real[col_name], bins=top_n)
         frq2, edges2 = np.histogram(fake[col_name], bins=edges)
-        ax[ridx][cidx].bar(edges[:-1], frq, width=np.diff(edges), edgecolor="black", color="#0077b6", align="edge", alpha=0.6)
-        ax[ridx][cidx].bar(edges2[:-1], frq2, width=np.diff(edges2), edgecolor="white", align="edge", color="#caf0f8", alpha=0.8)
+        ax[ridx][cidx].bar(edges[:-1], frq, width=np.diff(edges), edgecolor="black", color=REAL_COLOR, align="edge", alpha=0.6)
+        ax[ridx][cidx].bar(edges2[:-1], frq2, width=np.diff(edges2), edgecolor="white", align="edge", color=FAKE_COLOR, alpha=0.8)
         ax[ridx][cidx].set_xlabel(col_name, fontsize=11)
         ax[ridx][cidx].set_ylabel(None)
         ax[ridx][cidx].tick_params(axis="both", labelsize=10)
@@ -215,8 +216,8 @@ def univariate_cat_plot(real: pd.DataFrame, fake: pd.DataFrame, c_col: List[str]
     for i in range(len(c_col)):
         ridx, cidx = i // num_col, i % num_col
         order = real[c_col[i]].value_counts().iloc[:top_n].index
-        sns.countplot(real, x=c_col[i], alpha=0.6, color="#0077b6", edgecolor="black", ax=ax[ridx][cidx], order=order)
-        sns.countplot(fake, x=c_col[i], alpha=0.8, color="#caf0f8", edgecolor="white", ax=ax[ridx][cidx], order=order)
+        sns.countplot(real, x=c_col[i], alpha=0.6, color=REAL_COLOR, edgecolor="black", ax=ax[ridx][cidx], order=order)
+        sns.countplot(fake, x=c_col[i], alpha=0.8, color=FAKE_COLOR, edgecolor="white", ax=ax[ridx][cidx], order=order)
         ax[ridx][cidx].set_xlabel(c_col[i], fontsize=11)
         ax[ridx][cidx].set(xticklabels=[])
         ax[ridx][cidx].set_ylabel(None)

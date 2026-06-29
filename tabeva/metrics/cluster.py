@@ -12,6 +12,7 @@ from sklearn import cluster
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from tabeva.metrics.colors import REAL_COLOR, FAKE_COLOR, ALERT_COLOR
 
 
 def cluster_df(
@@ -21,6 +22,7 @@ def cluster_df(
     num_col: int = 5,
     figsize: Tuple = (15, 12.5),
     filename: str = "",
+    ratio_threshold: float = 0.2,
 ) -> float:
     """
     Fit KMeans on real data, predict clusters for both datasets, and compare
@@ -56,7 +58,8 @@ def cluster_df(
     cluster_R = pd.crosstab(df_rf["cluster"], df_rf["data_source"])
     _, p_value = stats.ks_2samp(cluster_R["real"], cluster_R["fake"])
 
-    cluster_plot(df_rf, df_rf_raw, centroid, num_col, figsize, filename)
+    cluster_plot(df_rf, df_rf_raw, centroid, num_col, figsize, filename, ratio_threshold=ratio_threshold)
+
 
     return p_value
 
@@ -68,12 +71,14 @@ def cluster_plot(
     num_col: int,
     figsize: Tuple = (12.5, 10),
     filename: Optional[str] = None,
+    ratio_threshold: float = 0.2,
 ) -> None:
     """
     PCA scatter plots for each cluster, showing real vs. fake samples and the centroid.
     """
     n_cluster = df_rf["cluster"].nunique()
     print(f"Plotting {n_cluster} clusters with {num_col} columns per row.")
+
     num_row = max(1, n_cluster // num_col)
     fig, axs = plt.subplots(num_row, num_col, sharex=False, figsize=figsize)
     axs = np.array(axs).reshape(num_row, num_col)
@@ -101,9 +106,19 @@ def cluster_plot(
         centroidt = pipe.transform(centroid_df)
         # centroidt = pipe.transform(centroid[i].reshape(1, -1))
 
-        axs[ridx][cidx].scatter(trealt[:, 0], trealt[:, 1], s=30, c=["#0077b6"], label="Real", alpha=0.6, marker="^")
-        axs[ridx][cidx].scatter(tfaket[:, 0], tfaket[:, 1], s=30, c=["#caf0f8"], label="Fake", alpha=0.8, marker=".")
-        axs[ridx][cidx].scatter(centroidt[0][0], centroidt[0][1], c="black", s=120, marker="*", label=f"Centroid {i}")
+        axs[ridx][cidx].scatter(trealt[:, 0], trealt[:, 1], s=30, c=[REAL_COLOR], label="Real", alpha=0.6, marker="^")
+        axs[ridx][cidx].scatter(tfaket[:, 0], tfaket[:, 1], s=30, c=[FAKE_COLOR], label="Fake", alpha=0.8, marker=".")
+        # color centroid star red when the ratio of real/fake in this cluster is very low
+        real_count = len(treal)
+        fake_count = len(tfake)
+        try:
+            ratio = min(real_count, fake_count) / max(real_count, fake_count)
+        except ZeroDivisionError:
+            ratio = 0.0
+
+        star_color = ALERT_COLOR if ratio < ratio_threshold else "black"
+
+        axs[ridx][cidx].scatter(centroidt[0][0], centroidt[0][1], c=star_color, s=120, marker="*", label=f"Centroid {i}")
 
     axs[0][num_col - 1].legend(["Real", "Fake"], prop={"size": 10})
     plt.tight_layout()

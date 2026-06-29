@@ -32,7 +32,7 @@ from tabeva.metrics.multivariate import (
     table_plot,
 )
 from tabeva.metrics.cluster import cluster_df, cluster_plot
-from tabeva.metrics.sample import ml_detection, record_df, record_plot
+from tabeva.metrics.sample import ml_detection, record_df, plot_nnd
 
 __all__ = [
     "kolmogorov_smirnov_test", "num_statistics_df", "get_frequencies", "chisquare_test", "cat_statistics_df",
@@ -43,5 +43,5 @@ __all__ = [
     "compute_nearest_neighbour_distances", "compute_prdc",
     "ml_evaluation", "ml_feature_importance", "bar_comparison", "table_plot",
     "cluster_df", "cluster_plot",
-    "ml_detection", "record_df", "record_plot",
+    "ml_detection", "record_df", "plot_nnd",
 ]

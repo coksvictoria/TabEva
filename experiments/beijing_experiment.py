@@ -37,42 +37,30 @@ CAT_COLS = [
 ]
 
 GMs = [
-    "real.csv",
-    "ADASYN.csv",
-    "copula.csv",
+    "SMOTE.csv",
+    "tvae.csv",
     "copulagan.csv",
     "ctabgan.csv",
-    "SMOTE.csv",
-    "SMOTENC.csv",
-    "SMOTETomek.csv",
-    "stasy.csv",
-    "synthpop.csv",
+    "copula.csv",
     "tabddpm.csv",
-    "tabsyn.csv",
+    "SMOTENC.csv",
     "ttvae.csv",
-    "tvae.csv",
-    "twae.csv",
+    "tabsyn.csv",
 ]
 
 os.makedirs(OUTPUT, exist_ok=True)
 
 # Map generator filenames to human-friendly synthesizer names used in reports
 SYN_NAME_MAP = {
-    "real.csv": "Real",
-    "ADASYN.csv": "ADASYN",
-    "copula.csv": "Copula",
-    "copulagan.csv": "CopulaGAN",
-    "ctabgan.csv": "CTABGAN",
-    "SMOTE.csv": "SMOTE",
-    "SMOTENC.csv": "SMOTENC",
-    "SMOTETomek.csv": "SMOTE-Tomek",
-    "stasy.csv": "STasy",
-    "synthpop.csv": "synthpop",
-    "tabddpm.csv": "TabDDPM",
-    "tabsyn.csv": "TabSyn",
-    "ttvae.csv": "TTVAE",
-    "tvae.csv": "TVAE",
-    "twae.csv": "TWAE",
+    "copula": "DP-CTGAN",
+    "copulagan": "CTGAN",
+    "ctabgan": "CTABGAN",
+    "SMOTE": "SMOTE",
+    "SMOTENC": "GReaT",
+    "tabddpm": "TabDDPM",
+    "tabsyn": "TabSyn",
+    "ttvae": "Tabula",
+    "tvae": "TVAE",
 }
 
 # ---------------------------------------------------------------------------

@@ -17,7 +17,6 @@ dependencies = [
     "seaborn",
     "scikit-learn",
     "lightgbm",
-    "shap",
     "joblib",
 ]
 

@@ -6,8 +6,6 @@ nearest-neighbour / centroid distance analysis with SHAP explainability.
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import shap
-import lightgbm as lgb
 from sklearn import cluster
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
@@ -83,30 +81,51 @@ def record_df(reale: pd.DataFrame, fakee: pd.DataFrame, fakes: pd.DataFrame, exp
     fakec["distance_1nn"] = distance_real_fake.min(axis=0).tolist()
     fakec["distance_to_centroid"] = clt.transform(fakee).min(axis=1).tolist()
 
-    record_plot(fakec, fakes, exp_metric, filename=filename)
-
     return fakec
 
 
-def record_plot(fakec: pd.DataFrame, fakes: pd.DataFrame, exp_metric: str = "dc", filename: str = "") -> None:
+# Note: `record_plot` removed as it's not used.
+
+
+def plot_nnd(data: pd.DataFrame, filename: str = "histograms.pdf") -> None:
     """
-    Fit a LightGBM regressor on synthetic features to predict distance,
-    then produce a SHAP bar plot to explain which features drive distance.
+    Create a 3x3 grid of histograms for columns in `data`.
+
+    Parameters
+    ----------
+    data : DataFrame
+        Columns to plot as histograms.
+    filename : str, optional
+        Path to save the resulting PDF (default: 'histograms.pdf').
     """
-    model_dc = lgb.LGBMRegressor(n_estimators=100, random_state=1)
+    # Create subplots for each column
+    fig, axes = plt.subplots(3, 3, figsize=(9, 9), sharey=True, sharex=True)
 
-    if exp_metric == "dc":
-        distance = fakec["distance_to_centroid"]
-    elif exp_metric == "dm":
-        distance = fakec["distance_mean"]
-    else:
-        distance = fakec["distance_1nn"]
+    # Loop through each column and create a histogram
+    for i, column in enumerate(data.columns):
+        row = i // 3
+        col = i % 3
+        ax = axes[row, col]
+        ax.hist(data[column], bins=10, color="#0077b6")
+        ax.axvline(data[column].mean(), color='k', linestyle='dashed', linewidth=1)
+        ax.set_title(column)
+        if row == 2:  # Set x-axis label for the bottom row
+            ax.set_xlabel('Value')
+        if col == 0:  # Set y-axis label for the leftmost column
+            ax.set_ylabel('Frequency')
 
-    model_dc.fit(fakes, distance)
+    # If there are unused subplots, hide them
+    total_plots = 9
+    for j in range(len(data.columns), total_plots):
+        r = j // 3
+        c = j % 3
+        axes[r, c].set_visible(False)
 
-    explainer = shap.TreeExplainer(model_dc)
-    shap_values = explainer(fakes)
-    shap.plots.bar(shap_values, show=False)
+    # Adjust layout
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+
+    # Save the plot as a PDF with the specified DPI
     if filename:
-        plt.savefig(filename, dpi=500, bbox_inches="tight")
+        plt.savefig(filename, dpi=300, bbox_inches='tight')
     plt.close()

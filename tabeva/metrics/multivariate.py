@@ -5,6 +5,7 @@ ML utility evaluation, feature importance, and dimensionality-reduction plots.
 
 import time
 from typing import Dict, List, Optional, Tuple
+from tabeva.metrics.colors import REAL_COLOR, FAKE_COLOR
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,7 +34,6 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.impute import SimpleImputer
 import warnings
 warnings.filterwarnings("ignore", message="X does not have valid feature names", category=UserWarning)
 
@@ -164,7 +164,6 @@ def ml_evaluation(
     real, fake, df_test = real.copy(), fake.copy(), df_test.copy()
     fake_x = fake.drop([target_col], axis=1)
     X_test = df_test.drop([target_col], axis=1)
-    
 
     if target_type == "class":
         c_col = [i for i in c_col if i != target_col]
@@ -210,24 +209,18 @@ def ml_evaluation(
                 model = Pipeline([("preprocess", col_transformer), ("regressor", est)])
                 model.fit(fake_x, fake_y)
                 y_pred = model.predict(X_test)
-                # Compute RMSE in a way that's compatible with multiple scikit-learn versions.
                 try:
                     rmse = mean_squared_error(y_test, y_pred, squared=False)
                 except TypeError:
-                    # Older sklearn versions don't accept `squared`; compute sqrt of MSE.
                     rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
-                R.append([model_name, est_name, r2_score(y_test, y_pred),
-                          mean_absolute_error(y_test, y_pred),
-                          rmse])
+                R.append([model_name, est_name, r2_score(y_test, y_pred), mean_absolute_error(y_test, y_pred), rmse])
             print(f"{est_name} took {round(time.time() - start, 2)}s")
 
-        # Compute average RMSE across estimators
         rmses = [row[4] for row in R if len(row) >= 5]
         avg_rmse = float(np.mean(rmses)) if len(rmses) > 0 else float("nan")
         return avg_rmse
 
     # Classification
-    # Keep three fast classifiers
     estimators = [
         lgb.LGBMClassifier(n_estimators=100, verbose=-1, force_row_wise=True),
         RandomForestClassifier(n_estimators=100, random_state=1,n_jobs=-1),
@@ -256,7 +249,6 @@ def ml_evaluation(
                 pass
         print(f"{est_name} took {round(time.time() - start, 2)}s")
 
-    # Compute average F1 across classifiers
     f1s = [row[3] for row in R if len(row) >= 4]
     avg_f1 = float(np.mean(f1s)) if len(f1s) > 0 else float("nan")
     return avg_f1
@@ -278,6 +270,14 @@ def bar_comparison(
     width = tot_bar_width / num_bars
     x = np.arange(len(indices))
     colors = sns.color_palette("Blues", num_bars)
+
+    # ensure the first two bars use canonical colors if available
+    if num_bars >= 2:
+        try:
+            colors[0] = REAL_COLOR
+            colors[1] = FAKE_COLOR
+        except Exception:
+            pass
 
     if tick_names is None:
         tick_names = list(range(len(vectors[0])))
@@ -383,10 +383,6 @@ def table_plot(reals: pd.DataFrame, fakes: pd.DataFrame, dimensionality_reductio
     else:
         raise ValueError(f"Unsupported reduction method: {dimensionality_reduction}")
 
-    # if reals.shape[0] > 10000:
-    #     reals = reals.sample(10000)
-    #     fakes = fakes.sample(10000)
-
     real_t = model.fit_transform(reals)
     fake_t = model.fit_transform(fakes)
 
@@ -399,7 +395,7 @@ def table_plot(reals: pd.DataFrame, fakes: pd.DataFrame, dimensionality_reductio
         data=pd.concat([real_df, fake_df]),
         x="Component 1",
         y="Component 2",
-        palette=["#2171B5", "#6BAED6"],
+        palette=[REAL_COLOR, FAKE_COLOR],
         joint_kws={"alpha": 0.8},
         hue="dataset",
     )
