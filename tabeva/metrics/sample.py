@@ -88,25 +88,16 @@ def record_df(reale: pd.DataFrame, fakee: pd.DataFrame, fakes: pd.DataFrame, exp
 
 
 def plot_nnd(data: pd.DataFrame, filename: str = "histograms.pdf") -> None:
-    """
-    Create a 3x3 grid of histograms for columns in `data`.
-
-    Parameters
-    ----------
-    data : DataFrame
-        Columns to plot as histograms.
-    filename : str, optional
-        Path to save the resulting PDF (default: 'histograms.pdf').
-    """
     # Create subplots for each column
     fig, axes = plt.subplots(3, 3, figsize=(9, 9), sharey=True, sharex=True)
+    # fig.suptitle("Histograms for 10 Columns")
 
     # Loop through each column and create a histogram
     for i, column in enumerate(data.columns):
-        row = i // 3
+        row = i //3
         col = i % 3
         ax = axes[row, col]
-        ax.hist(data[column], bins=10, color="#0077b6")
+        ax.hist(data[column], bins=10,color="#0077b6")
         ax.axvline(data[column].mean(), color='k', linestyle='dashed', linewidth=1)
         ax.set_title(column)
         if row == 2:  # Set x-axis label for the bottom row
@@ -114,18 +105,9 @@ def plot_nnd(data: pd.DataFrame, filename: str = "histograms.pdf") -> None:
         if col == 0:  # Set y-axis label for the leftmost column
             ax.set_ylabel('Frequency')
 
-    # If there are unused subplots, hide them
-    total_plots = 9
-    for j in range(len(data.columns), total_plots):
-        r = j // 3
-        c = j % 3
-        axes[r, c].set_visible(False)
-
     # Adjust layout
     plt.tight_layout()
     plt.subplots_adjust(top=0.9)
 
     # Save the plot as a PDF with the specified DPI
-    if filename:
-        plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.close()
+    plt.savefig(filename, dpi=300, bbox_inches='tight')

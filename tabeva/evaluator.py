@@ -270,11 +270,11 @@ class TabEva:
 
         # Plot nearest-neighbour (d1nn) and centroid distances (cdis)
         try:
-            plot_nnd(distances[["distance_1nn"]], filename=self._output_path(f"{self.synthesizer_name}_d1nn_hist.pdf", "sample"))
+            plot_nnd(distances[["distance_1nn"]])
         except Exception:
             pass
         try:
-            plot_nnd(distances[["distance_to_centroid"]], filename=self._output_path(f"{self.synthesizer_name}_cdis_hist.pdf", "sample"))
+            plot_nnd(distances[["distance_to_centroid"]])
         except Exception:
             pass
         output["mdis"] = distances["distance_mean"].mean()

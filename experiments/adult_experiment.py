@@ -19,6 +19,7 @@ import pandas as pd
 from tabeva import TabEva
 from tabeva.utils import load_data
 from tabeva.metrics.bivariate import bivariate_plots
+from tabeva.metrics.sample import plot_nnd
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -117,6 +118,17 @@ for fname, fake in loaded["fake"].items():
     results[syn_name] = rs
     abs_diffs[syn_name] = b
     distances.append(d)
+
+    # Ensure sample output folder exists and save per-synthesizer distance histograms
+    try:
+        os.makedirs(os.path.join(OUTPUT, "sample"), exist_ok=True)
+        plot_nnd(d[["distance_1nn"]])
+    except Exception:
+        pass
+    try:
+        plot_nnd(d[["distance_to_centroid"]])
+    except Exception:
+        pass
 
 # ---------------------------------------------------------------------------
 # Persist results
