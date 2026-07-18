@@ -130,6 +130,8 @@ output/
 # Output data
 synthetic/
 
+experiments/
+
 # compiled C extensions
 *.so
 
