@@ -1,3 +1,14 @@
+.venv/
+output/
+synthetic/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.idea/
+.vscode/
+.DS_Store
+uv.lock
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
