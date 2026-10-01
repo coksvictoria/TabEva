@@ -37,54 +37,25 @@ CAT_COLS = [
     "relationship", "race", "sex", "native.country", "income",
 ]
 
-GMs = [
-    # "real.csv",
-    "SMOTE.csv",
-    "tvae.csv",
-    "ctgan.csv",
-    "ctabgan.csv",
-    "copulagan.csv",
-    "tabsyn.csv",
-    "SMOTENC.csv",
-    "ttvae.csv",
-    "delta.csv",
-    # "simulation.csv",
-    # "ADASYN.csv",
-    # "copula.csv",
-    # "SMOTETomek.csv",
-    # "stasy.csv",
-    # "synthpop.csv",
-    # "twae.csv",
-]
-
+# Ensure output folder exists
 os.makedirs(OUTPUT, exist_ok=True)
 
+# Auto-discover synthesizer CSV files in the dataset folder (exclude real/test)
+data_path = os.path.join(DATA, DATA_FOLDER)
+try:
+    synth_files = [f for f in os.listdir(data_path)
+                   if f.endswith('.csv') and f not in ('real.csv', 'test.csv')]
+except FileNotFoundError:
+    synth_files = []
+
 # Map generator filenames to human-friendly synthesizer names used in reports
-SYN_NAME_MAP = {
-    "SMOTE": "SMOTE",
-    "tvae": "TVAE",
-    "ctgan": "CTGAN",
-    "ctabgan": "CTABGAN",
-    # "real.csv": "Real",
-    "copulagan": "TabDDPM",
-    "tabsyn": "TabSyn",
-    "SMOTENC": "TTVAE",
-    # "simulation": "Simulation",
-    # "ADASYN": "ADASYN",
-    # "copula": "Copula",
-    "ttvae": "Tabula",
-    "delta": "DELTA",
-    # "SMOTETomek.csv": "SMOTE-Tomek",
-    # "stasy.csv": "STasy",
-    # "synthpop.csv": "synthpop"
-    # "twae.csv": "TWAE",
-}
+# Note: removed manual synthesizer name map — use filename (without .csv) as synthesizer name
 
 # ---------------------------------------------------------------------------
 # Load data
 # ---------------------------------------------------------------------------
 
-loaded = load_data(DATA_FOLDER, DATA, GMs)
+loaded = load_data(DATA_FOLDER, DATA, synth_files)
 real = loaded["real"]
 df_test = loaded["test"]
 
@@ -98,8 +69,8 @@ distances: list = []
 
 for fname, fake in loaded["fake"].items():
     print(f"\n{'='*60}")
-    # convert filename into a human-friendly synthesizer name
-    syn_name = SYN_NAME_MAP.get(fname, os.path.splitext(fname)[0])
+    # synthesizer name: use filename (without .csv)
+    syn_name = os.path.splitext(fname)[0]
     print(f"Evaluating: {syn_name}")
     print(f"{'='*60}")
 
