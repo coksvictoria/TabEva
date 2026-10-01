@@ -16,7 +16,7 @@ matplotlib.use("Agg")  # non-interactive backend — no screen display
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from tabeva import TabEva
+from tabeva.evaluator import TabEva
 from tabeva.utils import load_data
 from tabeva.metrics.bivariate import bivariate_plots
 from tabeva.metrics.sample import plot_nnd
@@ -44,10 +44,10 @@ GMs = [
     "ctgan.csv",
     "ctabgan.csv",
     "copulagan.csv",
-    "tabddpm.csv",
+    "tabsyn.csv",
     "SMOTENC.csv",
     "ttvae.csv",
-    "tabsyn.csv",
+    "delta.csv",
     # "simulation.csv",
     # "ADASYN.csv",
     # "copula.csv",
@@ -61,22 +61,22 @@ os.makedirs(OUTPUT, exist_ok=True)
 
 # Map generator filenames to human-friendly synthesizer names used in reports
 SYN_NAME_MAP = {
-    # "real.csv": "Real",
-    "tabddpm": "TabDDPM",
-    "tabsyn": "TabSyn",
-    "simulation": "Simulation",
-    "ADASYN": "ADASYN",
-    "copula": "Copula",
-    "copulagan": "DP-CTGAN",
-    "ctabgan": "CTABGAN",
-    "ctgan": "CTGAN",
     "SMOTE": "SMOTE",
-    "SMOTENC": "GReaT",
+    "tvae": "TVAE",
+    "ctgan": "CTGAN",
+    "ctabgan": "CTABGAN",
+    # "real.csv": "Real",
+    "copulagan": "TabDDPM",
+    "tabsyn": "TabSyn",
+    "SMOTENC": "TTVAE",
+    # "simulation": "Simulation",
+    # "ADASYN": "ADASYN",
+    # "copula": "Copula",
+    "ttvae": "Tabula",
+    "delta": "DELTA",
     # "SMOTETomek.csv": "SMOTE-Tomek",
     # "stasy.csv": "STasy",
-    # "synthpop.csv": "synthpop",
-    "ttvae": "Tabula",
-    "tvae": "TVAE",
+    # "synthpop.csv": "synthpop"
     # "twae.csv": "TWAE",
 }
 

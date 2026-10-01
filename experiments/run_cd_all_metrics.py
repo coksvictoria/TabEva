@@ -27,8 +27,11 @@ def run_friedman_nemenyi(data: pd.DataFrame, alpha: float = 0.05, higher_is_bett
     if not isinstance(data, pd.DataFrame):
         raise ValueError("data must be a pandas DataFrame with columns as methods")
 
-    k = data.shape[1]
-    N = data.shape[0]
+    # drop any rows (blocks/datasets) that contain NA so tests ignore missing values
+    data_clean = data.dropna(axis=0, how='any')
+
+    k = data_clean.shape[1]
+    N = data_clean.shape[0]
 
     if N <= 0 or k <= 0:
         return {
@@ -39,24 +42,24 @@ def run_friedman_nemenyi(data: pd.DataFrame, alpha: float = 0.05, higher_is_bett
             "cd": float('nan'),
         }
 
-    arrays = [data[col].values for col in data.columns]
+    arrays = [data_clean[col].values for col in data_clean.columns]
     try:
         stat, p_value = friedmanchisquare(*arrays)
     except Exception:
         stat, p_value = float('nan'), float('nan')
 
-    ranks = data.rank(axis=1, method='average', ascending=not higher_is_better)
+    ranks = data_clean.rank(axis=1, method='average', ascending=not higher_is_better)
     avg_ranks = ranks.mean().sort_values()
 
     nemenyi_p = None
     if N > 1 and k > 1 and not np.isnan(p_value):
         try:
-            nemenyi_res = sp.posthoc_nemenyi_friedman(data.values)
-            nemenyi_p = pd.DataFrame(nemenyi_res, index=data.columns, columns=data.columns)
+            nemenyi_res = sp.posthoc_nemenyi_friedman(data_clean.values)
+            nemenyi_p = pd.DataFrame(nemenyi_res, index=data_clean.columns, columns=data_clean.columns)
         except Exception:
             try:
                 nemenyi_res = sp.posthoc_nemenyi_friedman(ranks.values)
-                nemenyi_p = pd.DataFrame(nemenyi_res, index=data.columns, columns=data.columns)
+                nemenyi_p = pd.DataFrame(nemenyi_res, index=data_clean.columns, columns=data_clean.columns)
             except Exception:
                 nemenyi_p = None
 

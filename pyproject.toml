@@ -18,6 +18,8 @@ dependencies = [
     "scikit-learn",
     "lightgbm",
     "joblib",
+    "scikit_posthocs",
+    "statsmodels"
 ]
 
 [project.optional-dependencies]
