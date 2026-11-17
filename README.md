@@ -1,65 +1,88 @@
-# TabEva: Unified Tabular Data Synthesis Evaluation Framework
+# TabEva
 
-#### Alex X. Wang (https://people.wgtn.ac.nz/alex.wang); Colin R. Simpson; Binh P. Nguyen
+TabEva is a Python framework for evaluating synthetic tabular data. It provides
+univariate, bivariate, multivariate, cluster, utility, and record-level
+diagnostics.
 
-## Abstract
-Generative AI has made significant progress, especially in computer vision and natural language processing. Now, sophisticated algorithms and architectures are expanding into tabular data synthesis, driven by the practical benefits of tabular data's widespread presence in daily life. However, synthesizing tabular data presents unique challenges due to its heterogeneous feature types, necessitating tailored evaluation models. Yet, there is a critical gap in unified and effective evaluation methods specifically designed for synthetic tabular data. To address this gap, we introduce TabEva, a unified and extensible evaluation framework for synthetic tabular data. Rather than proposing entirely new individual metrics, TabEva integrates established univariate, bivariate, multivariate, cluster-level, utility, and unit-record diagnostics into a consistent evaluation pipeline with standardized preprocessing, reporting, and visualization. The framework separates marginal distribution assessment, pairwise dependency preservation, global distributional similarity, support coverage, downstream utility, and post-hoc disclosure-risk diagnostics. In addition, TabEva includes framework-level refinements, such as a modified cluster tendency score, sign-aware association discrepancy handling, and structured visual diagnostics. Through experiments on diverse tabular datasets and synthesis algorithms, we demonstrate that TabEva provides a practical platform for comparing, ranking, and diagnosing synthetic tabular data generators. The results show that TabEva can reveal complementary strengths and weaknesses across different model families, supporting more informed selection and development of tabular data synthesis methods.
+## Install
 
+Requires Python 3.12 or newer and Git. Install the latest version from GitHub:
 
-
-#### Install (recommended in a venv)
 ```bash
-python -m venv .venv
-.venv\Scripts\Activate.ps1   # or .venv/bin/activate on Unix
-pip install -e .
+python -m pip install git+https://github.com/coksvictoria/TabEva.git
 ```
 
-#### Quick usage
+To work from a local checkout instead:
+
+```bash
+git clone https://github.com/coksvictoria/TabEva.git
+cd TabEva
+python -m pip install -e .
+```
+
+## Quick start
+
+The repository includes Adult example data in `synthetic/adult/`:
+
+```text
+real.csv
+test.csv
+SMOTE.csv
+ctabgan.csv
+tabddpm.csv
+```
+
+From the repository root, evaluate one included synthetic dataset:
 
 ```python
 from tabeva import TabEva
 from tabeva.utils import load_data
 
-loaded = load_data("adult", "synthetic", ["ctgan.csv"])
-real = loaded['real']
-fake = loaded['fake']['ctgan']
-test = loaded['test']
-
-ev = TabEva(real=real,
-                        fake=fake,
-                        df_test=test,
-                        cat_cols=['workclass','education','income'],
-                        target_col='income',
-                        target_type='class',
-                        synthesizer_name='CTGAN',
-                        dir_output='output/adult/')
-
-results, abs_diff, distances = ev.evaluate()
+data = load_data("adult", "synthetic", ["SMOTE.csv"])
+evaluator = TabEva(
+    real=data["real"],
+    fake=data["fake"]["SMOTE"],
+    df_test=data["test"],
+    cat_cols=[
+        "workclass", "education", "marital.status", "occupation",
+        "relationship", "race", "sex", "native.country", "income",
+    ],
+    target_col="income",
+    target_type="class",
+    synthesizer_name="SMOTE",
+    dir_output="output/adult/",
+)
+results, abs_diffs, distances = evaluator.evaluate()
 ```
 
-#### Run the example experiment
+`load_data(data_name, data_root, synthesizer_files)` expects each dataset folder
+to contain `real.csv`, `test.csv`, and the synthetic CSV files you want to load.
+For your own data, pass its root directory as `data_root`.
+
+## Run the included experiment
+
+The root-level runner evaluates every synthetic CSV in the selected dataset
+folder and saves reports under `output/<dataset>/`:
+
 ```bash
-python experiments/adult_experiment.py
+python run_experiments.py --datasets adult
 ```
 
-Notes
-- Results and plots are written to `output/` by default; consider adding
-    `output/` to `.gitignore` for repo cleanliness.
-- Dependencies are declared in `pyproject.toml`.
+Edit `DATASETS_TO_EVALUATE` in `run_experiments.py` to change the default
+dataset selection. Dataset-specific target and categorical-column settings are
+defined in `DATASET_CONFIG`.
 
+## Citation
 
-## Reference
-We appreciate your citations if you find this repository useful to your research!
-```
+If you use TabEva in your research, please cite:
+
+```bibtex
 @article{wang2026tabeva,
-  title={TabEva: Unified Tabular Data Synthesis Evaluation Framework},
-  author={Alex X. Wang, Colin R. Simpson and Binh P. Nguyen},
+  title={TabEva: Unified tabular data synthesis evaluation framework},
+  author={Wang, Alex X and Simpson, Colin R and Nguyen, Binh P},
   journal={Applied Soft Computing},
+  pages={116553},
   year={2026},
   publisher={Elsevier}
 }
 ```
-
-
-
-

@@ -137,6 +137,7 @@ env.bak/
 
 # Output data
 output/
+histograms.pdf
 
 # Output data
 synthetic/
@@ -147,3 +148,14 @@ synthetic/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# Publish only the small Adult demo dataset.
+!synthetic/
+synthetic/*
+!synthetic/adult/
+synthetic/adult/*
+!synthetic/adult/real.csv
+!synthetic/adult/test.csv
+!synthetic/adult/SMOTE.csv
+!synthetic/adult/ctabgan.csv
+!synthetic/adult/tabddpm.csv
